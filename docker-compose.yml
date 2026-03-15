@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  tapo-vision:
+    build: .
+    container_name: tapo-vision
+    restart: always                      # Auto-restart on crash = 24/7
+    network_mode: host                   # Required to reach cameras + go2rtc on LAN
+    volumes:
+      - ./recordings:/app/recordings     # Persist recordings to host disk
+      - ./.env:/app/.env:ro              # Mount credentials read-only
+    environment:
+      - YOLO_OFFLINE=1
+      - ULTRALYTICS_HUB=false
+    # Memory limit to prevent OOM on X220 (adjust based on your RAM)
+    # 4GB X220: use 2g  |  8GB X220: use 4g  |  16GB X220: use 6g
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"                  # Cap Docker log files
+        max-file: "3"                    # Keep 3 rotated logs

@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+recordings/
+captures/
+yolov8n.pt
+yolov8n_openvino_model/
+vision_env/
+.DS_Store
