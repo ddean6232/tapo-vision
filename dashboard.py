@@ -33,7 +33,7 @@ HTML_TEMPLATE = """
         .modal-content { background: #1e1e1e; padding: 25px; border-radius: 12px; max-width: 500px; width: 90%; color: #fff; line-height: 1.5; position: relative; }
         .modal-close { position: absolute; top: 15px; right: 15px; background: transparent; color: #ff4444; border: none; font-size: 1.5em; cursor: pointer; font-weight: bold; }
         .ai-desc { font-size: 0.9em; color: #aaa; margin-top: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .read-more { color: #00e676; cursor: pointer; font-size: 0.85em; font-weight: bold; margin-top: 5px; display: inline-block; }
+        .read-more { color: #00e676; cursor: pointer; font-size: 1.1em; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -80,8 +80,9 @@ HTML_TEMPLATE = """
                         let aiHtml = '';
                         if (ev.ai_desc) {
                             aiHtml = `
-                                <div class="ai-desc">${ev.ai_desc}</div>
-                                <div class="read-more" onclick="openModal('${ev.base_name}')">Read full analysis...</div>
+                                <div class="ai-desc">
+                                    ${ev.ai_desc} <span class="read-more" onclick="openModal('${ev.base_name}')" title="View Full Analysis">...</span>
+                                </div>
                             `;
                         }
                         
@@ -189,7 +190,7 @@ def get_events_list():
                 
                 # Full HTML Description for Modal
                 if "people" in analysis:
-                    ai_desc_full += "<h4>👥 People Detected:</h4><ul>"
+                    ai_desc_full += "<h4 style='margin-bottom:5px; color:#fff;'>👥 People Detected:</h4><ul style='margin-top:0; color:#ccc;'>"
                     for p in analysis["people"]:
                         clothing = p.get('clothing', 'unknown')
                         complexion = p.get('complexion', 'unknown')
@@ -198,13 +199,19 @@ def get_events_list():
                     ai_desc_full += "</ul>"
                     
                 if "vehicles" in analysis:
-                    ai_desc_full += "<h4>🚗 Vehicles Detected:</h4><ul>"
+                    ai_desc_full += "<h4 style='margin-bottom:5px; color:#fff;'>🚗 Vehicles Detected:</h4><ul style='margin-top:0; color:#ccc;'>"
                     for v in analysis["vehicles"]:
                         v_str = f"{v.get('color', '')} {v.get('make', '')} {v.get('model', '')}".strip()
                         parts.append(f"Vehicle ({v_str})")
                         ai_desc_full += f"<li>{v_str.title()} (Type: {v.get('type', 'unknown').title()})</li>"
                     ai_desc_full += "</ul>"
                     
+                # Append RAW JSON to the modal
+                raw_json = json.dumps(analysis, indent=2)
+                ai_desc_full += "<hr style='border: 0; border-top: 1px solid #333; margin: 15px 0;'>"
+                ai_desc_full += "<h4 style='margin-bottom:5px; color:#fff;'>Raw AI Output:</h4>"
+                ai_desc_full += f"<pre style='background: #000; padding: 12px; border-radius: 6px; font-size: 0.85em; overflow-x: auto; color: #00e676; border: 1px solid #333;'>{raw_json}</pre>"
+                
                 if parts:
                     ai_desc = " • ".join(parts)
             
