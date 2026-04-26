@@ -88,7 +88,11 @@ HTML_TEMPLATE = """
                         
                         card.innerHTML = `
                             <button class="delete-btn" onclick="deleteRecording('${ev.base_name}')">Delete</button>
-                            <h3>${ev.cam}</h3>
+                            <h3 style="margin-bottom: 5px;">${ev.cam}</h3>
+                            <div style="font-family: monospace; font-size: 0.75em; color: #888; margin-bottom: 12px;">
+                                📄 ${ev.video_file}<br>
+                                🕒 ${ev.time}
+                            </div>
                             <div>${tagsHtml}</div>
                             <video controls preload="metadata">
                                 <source src="/video/${ev.video_file}" type="video/mp4">
@@ -96,7 +100,6 @@ HTML_TEMPLATE = """
                             ${aiHtml}
                             <div class="meta">
                                 <span>Confidence: ${ev.conf}%</span>
-                                <span>${ev.time}</span>
                             </div>
                         `;
                         // Insert at the very top of the grid
