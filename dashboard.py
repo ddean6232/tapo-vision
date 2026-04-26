@@ -29,6 +29,11 @@ HTML_TEMPLATE = """
         .empty { text-align: center; color: #888; font-size: 1.2em; grid-column: 1 / -1; margin-top: 50px; display: none; }
         .delete-btn { position: absolute; top: 12px; right: 12px; background: #ff4444; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 0.8em; font-weight: bold; transition: background 0.2s; z-index: 10; }
         .delete-btn:hover { background: #cc0000; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: #1e1e1e; padding: 25px; border-radius: 12px; max-width: 500px; width: 90%; color: #fff; line-height: 1.5; position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: transparent; color: #ff4444; border: none; font-size: 1.5em; cursor: pointer; font-weight: bold; }
+        .ai-desc { font-size: 0.9em; color: #aaa; margin-top: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .read-more { color: #00e676; cursor: pointer; font-size: 0.85em; font-weight: bold; margin-top: 5px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -36,7 +41,18 @@ HTML_TEMPLATE = """
     <div id="video-grid" class="grid"></div>
     <div id="empty-msg" class="empty">No detections found yet. Waiting for AI events...</div>
 
+    <!-- Modal for full AI Analysis -->
+    <div id="ai-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal(event)">×</button>
+            <h2 style="margin-top:0; color:#00e676;">Full AI Analysis</h2>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
     <script>
+        let currentEvents = []; // Global store for modal data
+
         // Fetch events silently in the background
         async function pollEvents() {
             try {
@@ -50,6 +66,8 @@ HTML_TEMPLATE = """
                 const existingCards = Array.from(grid.children).map(c => c.dataset.basename);
                 const fetchedCards = events.map(e => e.base_name);
 
+                currentEvents = events; // Update global store
+
                 // Add NEW recordings seamlessly
                 // Reverse the array locally so we prepend the newest ones at the top correctly
                 [...events].reverse().forEach(ev => {
@@ -59,6 +77,13 @@ HTML_TEMPLATE = """
                         card.dataset.basename = ev.base_name;
                         
                         let tagsHtml = ev.objs.map(obj => `<span class="tag">${obj}</span>`).join('');
+                        let aiHtml = '';
+                        if (ev.ai_desc) {
+                            aiHtml = `
+                                <div class="ai-desc">${ev.ai_desc}</div>
+                                <div class="read-more" onclick="openModal('${ev.base_name}')">Read full analysis...</div>
+                            `;
+                        }
                         
                         card.innerHTML = `
                             <button class="delete-btn" onclick="deleteRecording('${ev.base_name}')">Delete</button>
@@ -67,6 +92,7 @@ HTML_TEMPLATE = """
                             <video controls preload="metadata">
                                 <source src="/video/${ev.video_file}" type="video/mp4">
                             </video>
+                            ${aiHtml}
                             <div class="meta">
                                 <span>Confidence: ${ev.conf}%</span>
                                 <span>${ev.time}</span>
@@ -115,6 +141,19 @@ HTML_TEMPLATE = """
             }
         }
 
+        // Modal Functions
+        function openModal(baseName) {
+            const ev = currentEvents.find(e => e.base_name === baseName);
+            if (ev && ev.ai_desc_full) {
+                document.getElementById('modal-body').innerHTML = ev.ai_desc_full;
+                document.getElementById('ai-modal').style.display = 'flex';
+            }
+        }
+
+        function closeModal(e) {
+            document.getElementById('ai-modal').style.display = 'none';
+        }
+
         // Poll every 5 seconds invisibly
         setInterval(pollEvents, 5000);
         // Load immediately on page load
@@ -141,6 +180,34 @@ def get_events_list():
             mtime = os.path.getmtime(jf)
             dt_str = datetime.fromtimestamp(mtime).strftime("%b %d, %H:%M:%S")
             
+            # Format AI Description if it exists
+            ai_desc = ""
+            ai_desc_full = ""
+            if "ai_analysis" in data:
+                analysis = data["ai_analysis"]
+                parts = []
+                
+                # Full HTML Description for Modal
+                if "people" in analysis:
+                    ai_desc_full += "<h4>👥 People Detected:</h4><ul>"
+                    for p in analysis["people"]:
+                        clothing = p.get('clothing', 'unknown')
+                        complexion = p.get('complexion', 'unknown')
+                        parts.append(f"Person ({clothing})")
+                        ai_desc_full += f"<li>Clothing: {clothing.title()}<br>Complexion: {complexion.title()}</li>"
+                    ai_desc_full += "</ul>"
+                    
+                if "vehicles" in analysis:
+                    ai_desc_full += "<h4>🚗 Vehicles Detected:</h4><ul>"
+                    for v in analysis["vehicles"]:
+                        v_str = f"{v.get('color', '')} {v.get('make', '')} {v.get('model', '')}".strip()
+                        parts.append(f"Vehicle ({v_str})")
+                        ai_desc_full += f"<li>{v_str.title()} (Type: {v.get('type', 'unknown').title()})</li>"
+                    ai_desc_full += "</ul>"
+                    
+                if parts:
+                    ai_desc = " • ".join(parts)
+            
             if os.path.exists(os.path.join(RECORDINGS_DIR, video_file)):
                 events.append({
                     "cam": data.get("cam", "Unknown Camera"),
@@ -148,7 +215,9 @@ def get_events_list():
                     "conf": int(data.get("conf", 0) * 100),
                     "time": dt_str,
                     "video_file": video_file,
-                    "base_name": base_name
+                    "base_name": base_name,
+                    "ai_desc": ai_desc,
+                    "ai_desc_full": ai_desc_full
                 })
         except Exception as e:
             print(f"Error reading {jf}: {e}")

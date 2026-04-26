@@ -62,18 +62,18 @@ def parse_args():
 
 # ── Frame extraction ────────────────────────────────────────────────────────────
 def get_key_frames(video_path: str, recordings_path: str) -> List[str]:
-    """Extracts 3 strategically spaced frames (20%, 50%, 80%) for multi-pass analysis."""
+    """Extracts 5 strategically spaced frames from the middle (30% to 70%) for maximum object visibility."""
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         return []
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    if total_frames < 3:
+    if total_frames < 5:
         cap.release()
         return []
 
-    # 20% = object entering, 50% = fully centered, 80% = best angle before leaving
-    sample_points = [int(total_frames * pct) for pct in (0.20, 0.50, 0.80)]
+    # Focus on the middle of the event where the object is likely most visible
+    sample_points = [int(total_frames * pct) for pct in (0.30, 0.40, 0.50, 0.60, 0.70)]
     saved_paths = []
 
     for i, frame_idx in enumerate(sample_points):
@@ -87,54 +87,20 @@ def get_key_frames(video_path: str, recordings_path: str) -> List[str]:
     cap.release()
     return saved_paths
 
-
-def aggregate_results(results: list) -> dict:
-    """Merges detections from multiple frame analyses into one clean result.
-    
-    Strategy:
-    - Vehicles: deduplicate by (make, type) key — keep the entry with most detail
-    - People: keep all unique clothing descriptions (different people at diff times)
-    """
-    all_vehicles: dict = {}  # key = (make.lower, type.lower) -> best entry
-    all_people:   list = []
-    seen_clothing: set = set()
-
-    for result in results:
-        if not result or "error" in result:
-            continue
-
-        for v in result.get("vehicles", []):
-            make  = (v.get("make")  or "unknown").strip()
-            vtype = (v.get("type")  or "unknown").strip()
-            key   = (make.lower(), vtype.lower())
-            # Prefer entries that have real make/model over 'unknown'
-            if key not in all_vehicles or make.lower() not in ("unknown", ""):
-                all_vehicles[key] = v
-
-        for p in result.get("people", []):
-            clothing = (p.get("clothing") or "").strip().lower()
-            if clothing and clothing not in seen_clothing:
-                seen_clothing.add(clothing)
-                all_people.append(p)
-
-    merged: dict = {}
-    if all_vehicles:
-        merged["vehicles"] = list(all_vehicles.values())
-    if all_people:
-        merged["people"] = all_people
-    return merged
-
 # ── Vision analysis ─────────────────────────────────────────────────────────────
-def analyze_frame(image_path: str, ollama_url: str, model: str) -> dict:
-    """Sends the frame to Ollama and returns structured JSON analysis."""
-    logging.info(f"🧠 Asking {model} to analyze the frame...")
+def analyze_sequence(image_paths: List[str], ollama_url: str, model: str) -> dict:
+    """Sends all 5 frames to Ollama at once for superior contextual analysis."""
+    logging.info(f"🧠 Asking {model} to analyze {len(image_paths)} sequential frames...")
     try:
-        with open(image_path, "rb") as f:
-            base64_image = base64.b64encode(f.read()).decode("utf-8")
+        base64_images = []
+        for path in image_paths:
+            with open(path, "rb") as f:
+                base64_images.append(base64.b64encode(f.read()).decode("utf-8"))
 
         prompt = (
-            "You are an expert security surveillance AI. Look at this image closely. "
-            "NOTE: This image may be from an Infrared Night-Vision camera (black and white). "
+            "You are an expert security surveillance AI. Look at these 5 sequential frames taken from the middle of a security video. "
+            "By looking at the sequence, you can better identify moving objects. "
+            "NOTE: This may be from an Infrared Night-Vision camera (black and white). "
             "1. Identify the specific make and model of any vehicles. "
             "2. Identify the color of the vehicles (if night vision, use 'dark' or 'light'). "
             "3. Identify the clothing type and color of any people present. "
@@ -150,12 +116,12 @@ def analyze_frame(image_path: str, ollama_url: str, model: str) -> dict:
             json={
                 "model": model,
                 "prompt": prompt,
-                "images": [base64_image],
+                "images": base64_images,
                 "format": "json",
                 "stream": False,
                 "options": {"temperature": 0.1}
             },
-            timeout=120  # 2 minute timeout per frame
+            timeout=180  # Longer timeout since it's processing 5 images at once
         )
         response.raise_for_status()
         data = response.json()
@@ -166,13 +132,11 @@ def analyze_frame(image_path: str, ollama_url: str, model: str) -> dict:
             logging.error("⚠️ Ollama returned malformed JSON.")
             return {"error": "Ollama returned malformed JSON."}
 
-        # Strip empty arrays to keep the log clean
         if "people" in parsed and not parsed["people"]:
             del parsed["people"]
         if "vehicles" in parsed and not parsed["vehicles"]:
             del parsed["vehicles"]
 
-        logging.info(f"✅ Result: {parsed}")
         return parsed
 
     except requests.exceptions.ConnectionError:
@@ -186,7 +150,6 @@ def analyze_frame(image_path: str, ollama_url: str, model: str) -> dict:
 # ── Main pipeline ───────────────────────────────────────────────────────────────
 def run_analyzer(recordings_path: str, model: str, ollama_url: str):
     recordings_path = os.path.abspath(recordings_path)
-    log_file = os.path.join(recordings_path, "unified_events_log.json")
 
     logging.info("=" * 50)
     logging.info("🚀 Tapo Offline AI Analyzer Started")
@@ -195,81 +158,55 @@ def run_analyzer(recordings_path: str, model: str, ollama_url: str):
     logging.info(f"   🌐 Ollama URL : {ollama_url}")
     logging.info("=" * 50)
 
-    if not os.path.exists(log_file):
-        logging.warning(f"No unified_events_log.json found at: {log_file}")
-        return
-
-    try:
-        with open(log_file, "r") as f:
-            log_data = json.load(f)
-    except Exception as e:
-        logging.error(f"Failed to read log file: {e}")
-        return
-
-    modified = False
+    import glob
+    json_files = glob.glob(os.path.join(recordings_path, "*.json"))
     processed_count = 0
 
-    for event in log_data:
+    for jf in json_files:
         if _shutdown_requested:
             logging.info("🛑 Shutdown requested — saving progress and exiting.")
             break
 
-        if "ai_analysis" not in event and "video_file" in event:
-            video_path = os.path.join(recordings_path, event["video_file"])
+        try:
+            with open(jf, "r") as f:
+                event = json.load(f)
+        except Exception as e:
+            logging.error(f"Failed to read {jf}: {e}")
+            continue
+
+        if "ai_analysis" not in event:
+            # Derive video filename
+            base_name = os.path.basename(jf).replace(".json", "")
+            video_path = os.path.join(recordings_path, f"{base_name}.mp4")
 
             if not os.path.exists(video_path):
-                logging.warning(f"⚠️ Video missing: {event['video_file']}. Tagging to prevent infinite retries.")
+                logging.warning(f"⚠️ Video missing: {video_path}. Tagging to prevent retries.")
                 event["ai_analysis"] = {"error": "Video file deleted or missing"}
-                modified = True
+                with open(jf, "w") as f:
+                    json.dump(event, f, indent=4)
                 continue
 
-            logging.info(f"🎬 Processing: {event['video_file']} (3-frame multi-pass)")
+            logging.info(f"🎬 Processing: {base_name}.mp4 (5-frame middle distribution)")
             img_paths = get_key_frames(video_path, recordings_path)
 
             if img_paths:
-                frame_results = []
-                for i, img_path in enumerate(img_paths):
-                    logging.info(f"  🖼️  Frame {i+1}/3...")
-                    result = analyze_frame(img_path, ollama_url, model)
-                    frame_results.append(result)
+                aggregated = analyze_sequence(img_paths, ollama_url, model)
+                for img_path in img_paths:
                     try:
                         os.remove(img_path)
                     except OSError:
                         pass
 
-                aggregated = aggregate_results(frame_results)
-                logging.info(f"✅ Aggregated: {aggregated}")
+                logging.info(f"✅ AI Result: {aggregated}")
+                
+                # Save the new analysis back to the individual JSON file
                 event["ai_analysis"] = aggregated
-                modified = True
+                with open(jf, "w") as f:
+                    json.dump(event, f, indent=4)
+                    
                 processed_count += 1
 
-    # Safe-merge save: re-read the file to pick up any new events written by the
-    # main camera app while we were processing, then overlay our AI results.
-    if modified:
-        try:
-            with open(log_file, "r") as f:
-                latest_data = json.load(f)
-
-            result_map = {
-                (e.get("timestamp"), e.get("cam")): e.get("ai_analysis")
-                for e in log_data
-                if "ai_analysis" in e
-            }
-            for event in latest_data:
-                key = (event.get("timestamp"), event.get("cam"))
-                if key in result_map:
-                    event["ai_analysis"] = result_map[key]
-
-            with open(log_file, "w") as f:
-                json.dump(latest_data, f, indent=4)
-
-            logging.info(f"💾 Saved {processed_count} new AI analyses to log.")
-        except Exception as e:
-            logging.error(f"⚠️ Failed to save JSON: {e}")
-    else:
-        logging.info("No new video events to analyze.")
-
-    logging.info("🏁 Analysis complete. Shutting down.")
+    logging.info(f"🏁 Analysis complete. Analyzed {processed_count} new videos.")
 
 # ── Entry point ─────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
