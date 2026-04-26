@@ -26,6 +26,7 @@ import signal
 import sys
 import logging
 import numpy as np
+import imageio
 from collections import deque
 from dotenv import load_dotenv
 from ultralytics import YOLO
@@ -172,20 +173,15 @@ class SmartTracker:
                 if task_type == "START":
                     filepath, fps, size = payload
                     current_file = filepath
-                    # Mac's native OpenCV actually supports hardware H.264 encoding via Apple's VideoToolbox automatically!
-                    writer = cv2.VideoWriter(
-                        f"{filepath}.mp4",
-                        cv2.VideoWriter_fourcc(*"avc1"),
-                        fps,
-                        size
-                    )
+                    # Use imageio to guarantee perfectly encoded, web-compatible H.264 video
+                    writer = imageio.get_writer(f"{filepath}.mp4", fps=fps, macro_block_size=None)
                     log.info(f"[{self.name}] Recording started: {filepath}")
                 elif task_type == "FRAME":
                     if writer is not None:
-                        writer.write(payload)
+                        writer.append_data(cv2.cvtColor(payload, cv2.COLOR_BGR2RGB))
                 elif task_type == "STOP":
                     if writer is not None:
-                        writer.release()
+                        writer.close()
                         writer = None
                     meta = payload
                     if current_file:
