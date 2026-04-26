@@ -333,6 +333,20 @@ if __name__ == "__main__":
     except Exception as e:
         log.error(f"Failed to start dashboard: {e}")
 
+    # ──────────────────────────────────────────────
+    # Launch Offline Analyzer in the background
+    # ──────────────────────────────────────────────
+    try:
+        import offline_analyzer
+        threading.Thread(
+            target=offline_analyzer.start_analyzer_loop,
+            name="AnalyzerLoop",
+            daemon=True
+        ).start()
+        log.info("Offline Analyzer scheduled (running every 5 minutes in the background)")
+    except Exception as e:
+        log.error(f"Failed to start offline analyzer: {e}")
+
     log.info("All cameras running. Press Ctrl+C to stop.")
 
     # Keep main thread alive, log heartbeat every 60s

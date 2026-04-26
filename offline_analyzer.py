@@ -15,6 +15,7 @@ import logging
 import base64
 import requests
 import cv2
+import time
 from typing import Optional, List
 from dotenv import load_dotenv
 
@@ -190,6 +191,28 @@ def run_analyzer(recordings_path: str, model: str, ollama_url: str):
                 processed_count += 1
 
     logging.info(f"🏁 Analysis complete. Analyzed {processed_count} new videos.")
+
+def start_analyzer_loop():
+    """Runs the analyzer continuously every 5 minutes (for background threading)."""
+    recordings_path = os.getenv("RECORDING_PATH", "./recordings/")
+    model = os.getenv("OLLAMA_MODEL", "llama3.2-vision")
+    ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
+    
+    # Wait 30 seconds on boot before doing the first sweep so cameras can initialize
+    time.sleep(30)
+    
+    while not _shutdown_requested:
+        try:
+            run_analyzer(recordings_path, model, ollama_url)
+        except Exception as e:
+            logging.error(f"Analyzer loop error: {e}")
+        
+        logging.info("💤 Analyzer sweep complete. Sleeping for 5 minutes...")
+        # Sleep in 1-second increments to catch shutdown signals instantly
+        for _ in range(300):
+            if _shutdown_requested:
+                break
+            time.sleep(1)
 
 if __name__ == "__main__":
     args = parse_args()
