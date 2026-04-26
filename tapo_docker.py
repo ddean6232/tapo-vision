@@ -57,7 +57,7 @@ CAMERAS = [
 RECORDING_PATH    = os.getenv("RECORDING_PATH", "./recordings/")
 COOLDOWN_PERIOD   = 8
 PRE_ROLL_SECONDS  = 5
-FPS               = 15          # Slightly lower FPS for CPU
+FPS               = int(os.getenv("CAMERA_FPS", "20")) # Match your camera's actual framerate to fix slow-motion
 INFERENCE_INTERVAL = float(os.getenv("INFERENCE_INTERVAL", "0.5"))
 INPUT_SIZE         = 416        # Smaller input = faster inference (was 640)
 CONFIDENCE         = 0.60       # Slightly lower to compensate for smaller input
@@ -318,6 +318,20 @@ if __name__ == "__main__":
     trackers = [SmartTracker(c) for c in CAMERAS]
     for t in trackers:
         t.start()
+
+    # ──────────────────────────────────────────────
+    # Launch Dashboard seamlessly in the background
+    # ──────────────────────────────────────────────
+    try:
+        import dashboard
+        threading.Thread(
+            target=lambda: dashboard.app.run(host="0.0.0.0", port=38180, use_reloader=False, debug=False),
+            name="Dashboard",
+            daemon=True
+        ).start()
+        log.info("Dashboard web server started on port 38180")
+    except Exception as e:
+        log.error(f"Failed to start dashboard: {e}")
 
     log.info("All cameras running. Press Ctrl+C to stop.")
 

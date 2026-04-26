@@ -1,9 +1,17 @@
 #!/bin/bash
 
-# Path for the macOS launch agent
+# Target directory in the user's home folder
+TARGET_DIR="$HOME/tapo-vision"
 PLIST_PATH="$HOME/Library/LaunchAgents/com.darrendean.tapovision.plist"
 
-# Generate the .plist file
+# Get the absolute path to uv so launchd knows exactly where to find it
+UV_PATH=$(which uv)
+
+if [ -z "$UV_PATH" ]; then
+    echo "Error: Could not find 'uv' command. Make sure it is installed."
+    exit 1
+fi
+
 cat << EOF > "$PLIST_PATH"
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -13,12 +21,12 @@ cat << EOF > "$PLIST_PATH"
     <string>com.darrendean.tapovision</string>
     <key>ProgramArguments</key>
     <array>
-        <!-- Use the absolute path to the virtual environment's python directly to avoid PATH issues -->
-        <string>/Users/darren_dean/Desktop/tapo-vision/.venv/bin/python</string>
-        <string>/Users/darren_dean/Desktop/tapo-vision/my_tapo_ai.py</string>
+        <string>$UV_PATH</string>
+        <string>run</string>
+        <string>$TARGET_DIR/tapo_docker.py</string>
     </array>
     <key>WorkingDirectory</key>
-    <string>/Users/darren_dean/Desktop/tapo-vision</string>
+    <string>$TARGET_DIR</string>
     
     <!-- Start automatically when Darren logs in -->
     <key>RunAtLoad</key>
@@ -30,19 +38,25 @@ cat << EOF > "$PLIST_PATH"
     
     <!-- Logging -->
     <key>StandardOutPath</key>
-    <string>/Users/darren_dean/Desktop/tapo-vision/tapo_service.log</string>
+    <string>$TARGET_DIR/tapo_service.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/darren_dean/Desktop/tapo-vision/tapo_service.err</string>
+    <string>$TARGET_DIR/tapo_service.err</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin:$HOME/.cargo/bin</string>
+    </dict>
 </dict>
 </plist>
 EOF
 
-# Load the service into Apple's launchd system
+# Load the service
+launchctl unload "$PLIST_PATH" 2>/dev/null
 launchctl load "$PLIST_PATH"
 
-echo "✅ Tapo-Vision has been successfully registered as a macOS service!"
-echo "It will automatically start in the background (and the Menu Bar) whenever you log in."
+echo "✅ Tapo-Vision has been successfully registered as a macOS background service!"
+echo "It is now running invisibly in the background from $TARGET_DIR."
 echo ""
-echo "To temporarily stop the service permanently, you can use the Menu Bar 'Quit' button."
-echo "To completely unregister the auto-start, run:"
-echo "launchctl unload $PLIST_PATH"
+echo "To view live logs, run: tail -f $TARGET_DIR/tapo_service.log"
+echo "To stop the service permanently, run: launchctl unload $PLIST_PATH"
