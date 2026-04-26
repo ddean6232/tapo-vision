@@ -3,9 +3,12 @@ import json
 import glob
 from datetime import datetime
 from flask import Flask, render_template_string, send_from_directory
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-RECORDINGS_DIR = "/app/recordings"
+RECORDINGS_DIR = os.getenv("RECORDING_PATH", "./recordings/")
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
