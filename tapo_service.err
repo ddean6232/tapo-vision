@@ -77506,3 +77506,192 @@ cv2.error: OpenCV(4.13.0) /Users/xperience/GHA-OpenCV-Python/_work/opencv-python
 2026-04-26 15:40:16 [INFO] [LPatio] 8000 inferences done | recording=False | queue=0
 2026-04-26 15:40:19 [INFO] 127.0.0.1 - - [26/Apr/2026 15:40:19] "GET /api/events HTTP/1.1" 200 -
 2026-04-26 15:40:20 [INFO] [Inside] 8200 inferences done | recording=False | queue=0
+2026-04-26 15:40:24 [INFO] [UPatio] 8100 inferences done | recording=False | queue=0
+2026-04-26 15:40:24 [INFO] 127.0.0.1 - - [26/Apr/2026 15:40:24] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:40:26 [INFO] [Heartbeat #18] UPatio=live/idle | LPatio=live/idle | Inside=live/idle
+2026-04-26 15:40:29 [INFO] [LPatio] 8100 inferences done | recording=False | queue=0
+2026-04-26 15:40:29 [INFO] 127.0.0.1 - - [26/Apr/2026 15:40:29] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:40:33 [INFO] [Inside] 8300 inferences done | recording=False | queue=0
+2026-04-26 15:40:34 [INFO] 127.0.0.1 - - [26/Apr/2026 15:40:34] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:40:37 [INFO] [UPatio] 8200 inferences done | recording=False | queue=0
+2026-04-26 15:40:39 [INFO] 127.0.0.1 - - [26/Apr/2026 15:40:39] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:40:42 [INFO] [LPatio] 8200 inferences done | recording=False | queue=0
+2026-04-26 15:40:44 [INFO] 127.0.0.1 - - [26/Apr/2026 15:40:44] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:40:46 [INFO] [Inside] 8400 inferences done | recording=False | queue=0
+2026-04-26 15:40:49 [INFO] 127.0.0.1 - - [26/Apr/2026 15:40:49] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:40:50 [INFO] [UPatio] 8300 inferences done | recording=False | queue=0
+2026-04-26 15:40:54 [INFO] 127.0.0.1 - - [26/Apr/2026 15:40:54] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:40:55 [INFO] [LPatio] 8300 inferences done | recording=False | queue=0
+2026-04-26 15:40:59 [INFO] [Inside] 8500 inferences done | recording=False | queue=0
+2026-04-26 15:40:59 [INFO] 127.0.0.1 - - [26/Apr/2026 15:40:59] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:03 [INFO] [UPatio] 8400 inferences done | recording=False | queue=0
+2026-04-26 15:41:04 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:04] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:08 [INFO] [LPatio] 8400 inferences done | recording=False | queue=0
+2026-04-26 15:41:09 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:09] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:12 [INFO] [Inside] 8600 inferences done | recording=False | queue=0
+2026-04-26 15:41:14 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:14] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:16 [INFO] [UPatio] 8500 inferences done | recording=False | queue=0
+2026-04-26 15:41:19 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:19] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:21 [INFO] [LPatio] 8500 inferences done | recording=False | queue=0
+2026-04-26 15:41:24 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:24] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:25 [INFO] [Inside] 8700 inferences done | recording=False | queue=0
+2026-04-26 15:41:26 [INFO] [Heartbeat #19] UPatio=live/idle | LPatio=live/idle | Inside=live/idle
+2026-04-26 15:41:29 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:29] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:30 [INFO] [UPatio] 8600 inferences done | recording=False | queue=0
+2026-04-26 15:41:34 [INFO] [LPatio] 8600 inferences done | recording=False | queue=0
+2026-04-26 15:41:34 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:34] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:38 [INFO] [Inside] 8800 inferences done | recording=False | queue=0
+2026-04-26 15:41:39 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:39] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:43 [INFO] [UPatio] 8700 inferences done | recording=False | queue=0
+2026-04-26 15:41:44 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:44] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:48 [INFO] [LPatio] 8700 inferences done | recording=False | queue=0
+2026-04-26 15:41:49 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:49] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:51 [INFO] [Inside] 8900 inferences done | recording=False | queue=0
+2026-04-26 15:41:54 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:54] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:41:56 [INFO] [UPatio] 8800 inferences done | recording=False | queue=0
+2026-04-26 15:41:59 [INFO] 127.0.0.1 - - [26/Apr/2026 15:41:59] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:00 [INFO] [LPatio] 8800 inferences done | recording=False | queue=0
+2026-04-26 15:42:04 [INFO] [Inside] 9000 inferences done | recording=False | queue=0
+2026-04-26 15:42:04 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:04] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:09 [INFO] [UPatio] 8900 inferences done | recording=False | queue=0
+2026-04-26 15:42:09 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:09] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:13 [INFO] [LPatio] 8900 inferences done | recording=False | queue=0
+2026-04-26 15:42:14 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:14] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:17 [INFO] [Inside] 9100 inferences done | recording=False | queue=0
+2026-04-26 15:42:19 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:19] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:22 [INFO] [UPatio] 9000 inferences done | recording=False | queue=0
+2026-04-26 15:42:24 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:24] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:26 [INFO] [Heartbeat #20] UPatio=live/idle | LPatio=live/idle | Inside=live/idle
+2026-04-26 15:42:26 [INFO] [LPatio] 9000 inferences done | recording=False | queue=0
+2026-04-26 15:42:29 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:29] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:30 [INFO] [Inside] 9200 inferences done | recording=False | queue=0
+2026-04-26 15:42:34 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:34] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:35 [INFO] [UPatio] 9100 inferences done | recording=False | queue=0
+2026-04-26 15:42:39 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:39] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:39 [INFO] [LPatio] 9100 inferences done | recording=False | queue=0
+2026-04-26 15:42:43 [INFO] [Inside] 9300 inferences done | recording=False | queue=0
+2026-04-26 15:42:44 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:44] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:48 [INFO] [UPatio] 9200 inferences done | recording=False | queue=0
+2026-04-26 15:42:49 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:49] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:53 [INFO] [LPatio] 9200 inferences done | recording=False | queue=0
+2026-04-26 15:42:54 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:54] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:42:55 [INFO] [Inside] 9400 inferences done | recording=False | queue=0
+2026-04-26 15:42:59 [INFO] 127.0.0.1 - - [26/Apr/2026 15:42:59] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:01 [INFO] [UPatio] 9300 inferences done | recording=False | queue=0
+2026-04-26 15:43:04 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:04] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:06 [INFO] [LPatio] 9300 inferences done | recording=False | queue=0
+2026-04-26 15:43:08 [INFO] [Inside] 9500 inferences done | recording=False | queue=0
+2026-04-26 15:43:09 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:09] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:14 [INFO] [UPatio] 9400 inferences done | recording=False | queue=0
+2026-04-26 15:43:14 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:14] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:19 [INFO] [LPatio] 9400 inferences done | recording=False | queue=0
+2026-04-26 15:43:19 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:19] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:21 [INFO] [Inside] 9600 inferences done | recording=False | queue=0
+2026-04-26 15:43:24 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:24] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:26 [INFO] [Heartbeat #21] UPatio=live/idle | LPatio=live/idle | Inside=live/idle
+2026-04-26 15:43:27 [INFO] Shutdown signal received, stopping gracefully...
+2026-04-26 15:43:27 [INFO] Shutdown complete.
+2026-04-26 15:43:28 [INFO] Loading YOLOv8n on Apple Silicon GPU (MPS)...
+2026-04-26 15:43:28 [INFO] ==================================================
+2026-04-26 15:43:28 [INFO] Tapo Vision — Bare Metal / MPS Edition
+2026-04-26 15:43:28 [INFO] Cameras: 3
+2026-04-26 15:43:28 [INFO] Inference: 416px @ 10 Hz, conf=0.6
+2026-04-26 15:43:28 [INFO] Recordings: ./recordings/
+2026-04-26 15:43:28 [INFO] ==================================================
+2026-04-26 15:43:28 [INFO] [UPatio] Connecting to RTSP: rtsp://192.168.8.200:8554/UPatio
+2026-04-26 15:43:28 [INFO] [UPatio] All threads started
+2026-04-26 15:43:28 [INFO] [LPatio] Connecting to RTSP: rtsp://192.168.8.200:8554/LPatio
+2026-04-26 15:43:28 [INFO] [LPatio] All threads started
+2026-04-26 15:43:28 [INFO] [Inside] Connecting to RTSP: rtsp://192.168.8.200:8554/Inside
+2026-04-26 15:43:28 [INFO] [Inside] All threads started
+2026-04-26 15:43:28 [INFO] Dashboard web server started on port 38180
+2026-04-26 15:43:28 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:38180
+ * Running on http://192.168.8.105:38180
+2026-04-26 15:43:28 [INFO] [33mPress CTRL+C to quit[0m
+2026-04-26 15:43:28 [INFO] Offline Analyzer scheduled (running every 5 minutes in the background)
+2026-04-26 15:43:28 [INFO] All cameras running. Press Ctrl+C to stop.
+2026-04-26 15:43:29 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:29] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:30 [INFO] [UPatio] RTSP connected
+2026-04-26 15:43:33 [INFO] [LPatio] RTSP connected
+2026-04-26 15:43:34 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:34] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:35 [INFO] [Inside] RTSP connected
+2026-04-26 15:43:39 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:39] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:44 [INFO] [UPatio] 100 inferences done | recording=False | queue=0
+2026-04-26 15:43:44 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:44] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:46 [INFO] [LPatio] 100 inferences done | recording=False | queue=0
+2026-04-26 15:43:48 [INFO] [Inside] 100 inferences done | recording=False | queue=0
+2026-04-26 15:43:49 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:49] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:54 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:54] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:43:57 [INFO] [UPatio] 200 inferences done | recording=False | queue=0
+2026-04-26 15:43:59 [INFO] ==================================================
+2026-04-26 15:43:59 [INFO] 🚀 Tapo Offline AI Analyzer Started
+2026-04-26 15:43:59 [INFO]    📁 Recordings : /Users/darren_dean/tapo-vision/recordings
+2026-04-26 15:43:59 [INFO]    🤖 Model      : llama3.2-vision
+2026-04-26 15:43:59 [INFO]    🌐 Ollama URL : http://localhost:11434
+2026-04-26 15:43:59 [INFO] ==================================================
+2026-04-26 15:43:59 [INFO] 🏁 Analysis complete. Analyzed 0 new videos.
+2026-04-26 15:43:59 [INFO] 💤 Analyzer sweep complete. Sleeping for 5 minutes...
+2026-04-26 15:43:59 [INFO] [LPatio] 200 inferences done | recording=False | queue=0
+2026-04-26 15:43:59 [INFO] 127.0.0.1 - - [26/Apr/2026 15:43:59] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:01 [INFO] [Inside] 200 inferences done | recording=False | queue=0
+2026-04-26 15:44:04 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:04] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:09 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:09] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:10 [INFO] [UPatio] 300 inferences done | recording=False | queue=0
+2026-04-26 15:44:12 [INFO] [LPatio] 300 inferences done | recording=False | queue=0
+2026-04-26 15:44:14 [INFO] [Inside] 300 inferences done | recording=False | queue=0
+2026-04-26 15:44:14 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:14] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:19 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:19] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:23 [INFO] [UPatio] 400 inferences done | recording=False | queue=0
+2026-04-26 15:44:24 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:24] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:25 [INFO] [LPatio] 400 inferences done | recording=False | queue=0
+2026-04-26 15:44:27 [INFO] [Inside] 400 inferences done | recording=False | queue=0
+2026-04-26 15:44:29 [INFO] [Heartbeat #1] UPatio=live/idle | LPatio=live/idle | Inside=live/idle
+2026-04-26 15:44:29 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:29] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:34 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:34] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:36 [INFO] [UPatio] 500 inferences done | recording=False | queue=0
+2026-04-26 15:44:38 [INFO] [LPatio] 500 inferences done | recording=False | queue=0
+2026-04-26 15:44:39 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:39] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:40 [INFO] [Inside] 500 inferences done | recording=False | queue=0
+2026-04-26 15:44:44 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:44] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:49 [INFO] [UPatio] 600 inferences done | recording=False | queue=0
+2026-04-26 15:44:49 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:49] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:51 [INFO] [LPatio] 600 inferences done | recording=False | queue=0
+2026-04-26 15:44:53 [INFO] [Inside] 600 inferences done | recording=False | queue=0
+2026-04-26 15:44:54 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:54] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:44:59 [INFO] 127.0.0.1 - - [26/Apr/2026 15:44:59] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:02 [INFO] [UPatio] 700 inferences done | recording=False | queue=0
+2026-04-26 15:45:04 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:04] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:05 [INFO] [LPatio] 700 inferences done | recording=False | queue=0
+2026-04-26 15:45:06 [INFO] [Inside] 700 inferences done | recording=False | queue=0
+2026-04-26 15:45:09 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:09] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:14 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:14] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:15 [INFO] [UPatio] 800 inferences done | recording=False | queue=0
+2026-04-26 15:45:18 [INFO] [LPatio] 800 inferences done | recording=False | queue=0
+2026-04-26 15:45:19 [INFO] [Inside] 800 inferences done | recording=False | queue=0
+2026-04-26 15:45:19 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:19] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:24 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:24] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:28 [INFO] [UPatio] 900 inferences done | recording=False | queue=0
+2026-04-26 15:45:29 [INFO] [Heartbeat #2] UPatio=live/idle | LPatio=live/idle | Inside=live/idle
+2026-04-26 15:45:29 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:29] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:31 [INFO] [LPatio] 900 inferences done | recording=False | queue=0
+2026-04-26 15:45:32 [INFO] [Inside] 900 inferences done | recording=False | queue=0
+2026-04-26 15:45:34 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:34] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:39 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:39] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:41 [INFO] [UPatio] 1000 inferences done | recording=False | queue=0
+2026-04-26 15:45:44 [INFO] [LPatio] 1000 inferences done | recording=False | queue=0
+2026-04-26 15:45:44 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:44] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:45 [INFO] [Inside] 1000 inferences done | recording=False | queue=0
+2026-04-26 15:45:49 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:49] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:54 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:54] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:45:54 [INFO] [UPatio] 1100 inferences done | recording=False | queue=0
+2026-04-26 15:45:57 [INFO] [LPatio] 1100 inferences done | recording=False | queue=0
+2026-04-26 15:45:58 [INFO] [Inside] 1100 inferences done | recording=False | queue=0
+2026-04-26 15:45:59 [INFO] 127.0.0.1 - - [26/Apr/2026 15:45:59] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:46:04 [INFO] 127.0.0.1 - - [26/Apr/2026 15:46:04] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:46:07 [INFO] [UPatio] 1200 inferences done | recording=False | queue=0
+2026-04-26 15:46:09 [INFO] 127.0.0.1 - - [26/Apr/2026 15:46:09] "GET /api/events HTTP/1.1" 200 -
+2026-04-26 15:46:10 [INFO] [LPatio] 1200 inferences done | recording=False | queue=0
+2026-04-26 15:46:11 [INFO] [Inside] 1200 inferences done | recording=False | queue=0
+2026-04-26 15:46:14 [INFO] 127.0.0.1 - - [26/Apr/2026 15:46:14] "GET /api/events HTTP/1.1" 200 -

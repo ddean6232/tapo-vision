@@ -1,5 +1,5 @@
 """
-tapo_docker.py — Headless, CPU-optimized build for Docker / CHEETAH server deployment.
+tapo_vision.py — Headless, CPU-optimized build for Docker / CHEETAH server deployment.
 Based on my_tapo_ai.py but tuned for low-power Intel hardware (2C/4T Sandy Bridge).
 
 Key differences from my_tapo_ai.py:

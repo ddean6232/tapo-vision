@@ -13,7 +13,7 @@ AI-powered multi-camera security surveillance system for Tapo PTZ cameras. Optim
 ## Repo Structure
 
 - `my_tapo_ai.py`: Main dashboard application with GUI (best for MacBook Pro M4).
-- `tapo_docker.py`: Headless, CPU-optimized version (best for 24/7 Docker deployment).
+- `tapo_vision.py`: Headless, CPU-optimized version (best for 24/7 Docker deployment).
 - `Dockerfile` / `docker-compose.yml`: Deployment configs for Docker.
 
 ## Setup

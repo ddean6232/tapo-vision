@@ -23,7 +23,7 @@ cat << EOF > "$PLIST_PATH"
     <array>
         <string>$UV_PATH</string>
         <string>run</string>
-        <string>$TARGET_DIR/tapo_docker.py</string>
+        <string>$TARGET_DIR/tapo_vision.py</string>
     </array>
     <key>WorkingDirectory</key>
     <string>$TARGET_DIR</string>

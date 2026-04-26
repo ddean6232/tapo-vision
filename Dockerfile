@@ -28,7 +28,7 @@ RUN uv pip install --system --no-cache \
     imageio[ffmpeg]
 
 # Copy application code and model
-COPY tapo_docker.py .
+COPY tapo_vision.py .
 COPY dashboard.py .
 COPY yolov8n.pt .
 
@@ -40,4 +40,4 @@ ENV PYTHONUNBUFFERED=1
 ENV YOLO_OFFLINE=1
 ENV ULTRALYTICS_HUB=false
 
-CMD ["python", "tapo_docker.py"]
+CMD ["python", "tapo_vision.py"]
