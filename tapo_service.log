@@ -71045,3 +71045,11 @@
 2026-04-26 11:14:11,449 [INFO] TapoAI: [UPatio] Stream connected.
 2026-04-26 12:14:41,565 [INFO] TapoAI: [LPatio] Saved /Users/darren_dean/Desktop/tapo-vision/recordings/LPatio_0426-121426.mp4 and updated event log.
 2026-04-26 12:18:45,600 [INFO] TapoAI: 🛑 Signal 15 received. Shutting down Tapo Vision...
+ * Serving Flask app 'dashboard'
+ * Debug mode: off
+ * Serving Flask app 'dashboard'
+ * Debug mode: off
+ * Serving Flask app 'dashboard'
+ * Debug mode: off
+ * Serving Flask app 'dashboard'
+ * Debug mode: off
