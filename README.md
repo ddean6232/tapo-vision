@@ -5,7 +5,6 @@ AI-powered multi-camera security surveillance system for Tapo PTZ cameras. Optim
 ## Features
 
 - **Real-time Detection**: Uses YOLOv8 Nano to detect people, cars, and trucks.
-- **PTZ Tracking**: Automatically nudges camera motors to follow moving subjects.
 - **Smart Recording**: 5-second pre-roll buffer + event-based recording with JSON metadata.
 - **M4 GPU Optimized**: High-performance inference using Apple Metal (MPS).
 - **Docker Ready**: Headless version with OpenVINO optimization for continuous 24/7 monitoring on low-power hardware (like ThinkPad X220 or N100 mini PCs).
@@ -16,12 +15,11 @@ AI-powered multi-camera security surveillance system for Tapo PTZ cameras. Optim
 - `my_tapo_ai.py`: Main dashboard application with GUI (best for MacBook Pro M4).
 - `tapo_docker.py`: Headless, CPU-optimized version (best for 24/7 Docker deployment).
 - `Dockerfile` / `docker-compose.yml`: Deployment configs for Docker.
-- `tapomoving.py` / `tapoin.py`: Utilities for testing motor control and connection.
 
 ## Setup
 
 1. Copy `.env.example` to `.env` and fill in your camera credentials.
-2. Install dependencies: `pip install ultralytics pytapo python-dotenv opencv-python`.
+2. Install dependencies: `pip install ultralytics python-dotenv opencv-python`.
 3. Run `python my_tapo_ai.py`.
 
 ## Optimization Notes

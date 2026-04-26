@@ -9,21 +9,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy the lightning-fast 'uv' installer directly from its official image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 WORKDIR /app
 
-# Install Python packages
-# opencv-python-headless = no GUI deps (smaller image)
-# openvino = Intel CPU optimization for YOLO (2-3x speedup on X220)
-RUN pip install --no-cache-dir \
+# Use uv to install packages into the system python. 
+# We explicitly force the CPU index so it NEVER downloads Nvidia/CUDA bloat.
+RUN uv pip install --system --no-cache \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    torch torchvision \
     ultralytics \
     opencv-python-headless \
-    pytapo \
     python-dotenv \
     numpy \
-    openvino
+    openvino \
+    flask \
+    imageio[ffmpeg]
 
 # Copy application code and model
 COPY tapo_docker.py .
+COPY dashboard.py .
 COPY yolov8n.pt .
 
 # Create recordings directory

@@ -1,5 +1,5 @@
 """
-tapo_docker.py — Headless, CPU-optimized build for Docker / X220 deployment.
+tapo_docker.py — Headless, CPU-optimized build for Docker / CHEETAH server deployment.
 Based on my_tapo_ai.py but tuned for low-power Intel hardware (2C/4T Sandy Bridge).
 
 Key differences from my_tapo_ai.py:
@@ -29,7 +29,6 @@ import numpy as np
 from collections import deque
 from dotenv import load_dotenv
 from ultralytics import YOLO
-from pytapo import Tapo
 
 # ──────────────────────────────────────────────
 # Logging
@@ -46,23 +45,20 @@ log = logging.getLogger("tapo-vision")
 # ──────────────────────────────────────────────
 load_dotenv()
 
-USER_ADMIN = os.getenv("USER_ADMIN")
-PASS_ADMIN = os.getenv("PASS_ADMIN")
-
 GO2RTC_IP   = os.getenv("GO2RTC_IP", "192.168.8.8")
 GO2RTC_PORT = os.getenv("GO2RTC_PORT", "8554")
 
 CAMERAS = [
     {"ip": "192.168.8.102", "name": "UPatio", "go2rtc_stream": "UPatio"},
-    {"ip": "192.168.8.103", "name": "Inside",   "go2rtc_stream": "Inside"},
-    {"ip": "192.168.8.104", "name": "LPatio",   "go2rtc_stream": "LPatio"},
+    {"ip": "192.168.8.103", "name": "LPatio",   "go2rtc_stream": "LPatio"},
+    {"ip": "192.168.8.104", "name": "Inside",   "go2rtc_stream": "Inside"},
 ]
 
 RECORDING_PATH    = os.getenv("RECORDING_PATH", "./recordings/")
 COOLDOWN_PERIOD   = 8
 PRE_ROLL_SECONDS  = 5
 FPS               = 15          # Slightly lower FPS for CPU
-INFERENCE_INTERVAL = 0.5        # 2 Hz per camera (was 0.2 / 5 Hz on M4)
+INFERENCE_INTERVAL = float(os.getenv("INFERENCE_INTERVAL", "0.5"))
 INPUT_SIZE         = 416        # Smaller input = faster inference (was 640)
 CONFIDENCE         = 0.60       # Slightly lower to compensate for smaller input
 MAX_WRITE_QUEUE    = 500        # Cap to prevent OOM (~500 frames ≈ 300 MB)
@@ -80,34 +76,12 @@ signal.signal(signal.SIGINT,  _signal_handler)
 signal.signal(signal.SIGTERM, _signal_handler)
 
 # ──────────────────────────────────────────────
-# Model loading — OpenVINO preferred, CPU fallback
+# Model loading — Apple Silicon GPU (MPS)
 # ──────────────────────────────────────────────
-def load_model():
-    """Try OpenVINO for Intel speedup, fall back to regular CPU PyTorch."""
-    openvino_dir = "yolov8n_openvino_model"
+log.info("Loading YOLOv8n on Apple Silicon GPU (MPS)...")
+model = YOLO("yolov8n.pt")
+model.to("mps")  # Force use of the M4 Metal GPU
 
-    # Check if OpenVINO model already exported
-    if os.path.isdir(openvino_dir):
-        log.info("Loading pre-exported OpenVINO model...")
-        try:
-            m = YOLO(openvino_dir)
-            log.info("✓ OpenVINO model loaded — expect 2-3x speedup on Intel CPU")
-            return m
-        except Exception as e:
-            log.warning(f"OpenVINO load failed ({e}), falling back to PyTorch CPU")
-
-    # Try to export to OpenVINO
-    base_model = YOLO("yolov8n.pt")
-    try:
-        log.info("Exporting YOLOv8n to OpenVINO format (one-time, ~30s)...")
-        export_path = base_model.export(format="openvino", imgsz=INPUT_SIZE)
-        log.info(f"✓ OpenVINO export complete: {export_path}")
-        return YOLO(export_path)
-    except Exception as e:
-        log.warning(f"OpenVINO export failed ({e}), using PyTorch CPU — slower but works")
-        return base_model
-
-model = load_model()
 model_lock = threading.Lock()
 
 
@@ -117,20 +91,6 @@ class SmartTracker:
         self.name = cam_info["name"]
         self.go2rtc_stream = cam_info["go2rtc_stream"]
         self.latest_rtsp_frame = None
-        self.privacy_active = False
-
-        self.last_motor_time = 0
-        self.move_cooldown   = 0.6
-
-        # Connect to camera for motor control
-        try:
-            self.tapo = Tapo(self.ip, USER_ADMIN, PASS_ADMIN)
-            self.check_privacy()
-            self.go_home()
-            log.info(f"[{self.name}] Tapo connected at {self.ip}")
-        except Exception as e:
-            log.error(f"[{self.name}] Failed to init PyTapo: {e}")
-            self.tapo = None
 
         # RTSP via go2rtc
         self.rtsp_url = f"rtsp://{GO2RTC_IP}:{GO2RTC_PORT}/{self.go2rtc_stream}"
@@ -140,55 +100,6 @@ class SmartTracker:
         self.write_queue = queue.Queue(maxsize=MAX_WRITE_QUEUE)
         self.last_detection_time = 0
         self.event_metadata = {"objects": set(), "max_conf": 0.0}
-
-    def check_privacy(self):
-        try:
-            info = self.tapo.getPrivacyMode()
-            self.privacy_active = (
-                info == "on"
-                or (isinstance(info, dict) and info.get("enabled") in ("on", True))
-            )
-        except Exception:
-            self.privacy_active = False
-
-    def smooth_move(self, error_x, frame_width, label="person"):
-        is_vehicle = label in ("car", "truck")
-        cooldown = 0.3 if is_vehicle else self.move_cooldown
-
-        now = time.time()
-        if not self.tapo or self.privacy_active or (now - self.last_motor_time < cooldown):
-            return
-
-        edge_pct = 0.25 if is_vehicle else 0.35
-        edge_threshold = frame_width * edge_pct
-        if abs(error_x) < edge_threshold:
-            return
-
-        multiplier = 0.04 if is_vehicle else 0.02
-        max_step   = 8    if is_vehicle else 5
-
-        move_val = int(error_x * multiplier)
-        move_val = max(-max_step, min(max_step, move_val))
-        if move_val == 0:
-            move_val = 1 if error_x > 0 else -1
-
-        try:
-            self.last_motor_time = now
-            threading.Thread(target=self.tapo.moveMotor, args=(move_val, 0), daemon=True).start()
-        except Exception as e:
-            log.warning(f"[{self.name}] Motor move failed: {e}")
-
-    def go_home(self):
-        if not self.tapo or self.privacy_active:
-            return
-        try:
-            for method in ["setPreset", "set_preset"]:
-                if hasattr(self.tapo, method):
-                    getattr(self.tapo, method)(1)
-                    break
-        except Exception as e:
-            if "64303" not in str(e) and "motor_busy" not in str(e).lower():
-                log.warning(f"[{self.name}] Return to home failed: {e}")
 
     # ── Thread entry points ──────────────────
 
@@ -261,11 +172,12 @@ class SmartTracker:
                 if task_type == "START":
                     filepath, fps, size = payload
                     current_file = filepath
+                    # Mac's native OpenCV actually supports hardware H.264 encoding via Apple's VideoToolbox automatically!
                     writer = cv2.VideoWriter(
                         f"{filepath}.mp4",
-                        cv2.VideoWriter_fourcc(*"mp4v"),
+                        cv2.VideoWriter_fourcc(*"avc1"),
                         fps,
-                        size,
+                        size
                     )
                     log.info(f"[{self.name}] Recording started: {filepath}")
                 elif task_type == "FRAME":
@@ -290,14 +202,6 @@ class SmartTracker:
 
     def _run(self):
         """Main AI loop — inference, tracking, recording control."""
-        # Privacy poller
-        def poller():
-            while not shutdown_event.is_set():
-                if self.tapo:
-                    self.check_privacy()
-                time.sleep(10)
-        threading.Thread(target=poller, name=f"{self.name}-privacy", daemon=True).start()
-
         last_processed_frame = None
         last_inference_time = 0
         last_boxes = []
@@ -307,16 +211,12 @@ class SmartTracker:
             try:
                 frame = self.latest_rtsp_frame
                 if frame is None or frame is last_processed_frame:
-                    time.sleep(0.05)
+                    time.sleep(0.01)  # Was 0.05: lowered to prevent dropping frames (light-speed bug)
                     continue
 
                 last_processed_frame = frame
                 frame = frame.copy()
                 h, w = frame.shape[:2]
-
-                if self.privacy_active:
-                    time.sleep(0.1)
-                    continue
 
                 # --- AI Inference (throttled) ---
                 now = time.time()
@@ -347,10 +247,6 @@ class SmartTracker:
                     if now - last_inference_time <= INFERENCE_INTERVAL:
                         self.last_detection_time = time.time()
 
-                    top_box = last_boxes[0]
-                    box_data = top_box.xywh[0].cpu().tolist()
-                    center_x = box_data[0]
-
                     for box in last_boxes:
                         conf = float(box.conf.cpu().item())
                         label = model.names[int(box.cls)]
@@ -358,10 +254,6 @@ class SmartTracker:
                         self.event_metadata["max_conf"] = max(
                             self.event_metadata["max_conf"], conf
                         )
-
-                    error_x = center_x - (w / 2)
-                    top_label = model.names[int(top_box.cls)]
-                    self.smooth_move(error_x, w, label=top_label)
 
                     if not self.is_recording:
                         self.start_recording((w, h))
@@ -408,7 +300,6 @@ class SmartTracker:
             "conf": round(self.event_metadata["max_conf"], 2),
         }
         self.write_queue.put(("STOP", meta))
-        self.go_home()
 
 
 # ──────────────────────────────────────────────
@@ -418,7 +309,7 @@ if __name__ == "__main__":
     os.makedirs(RECORDING_PATH, exist_ok=True)
 
     log.info("=" * 50)
-    log.info("Tapo Vision — Docker/CPU Edition")
+    log.info("Tapo Vision — Bare Metal / MPS Edition")
     log.info(f"Cameras: {len(CAMERAS)}")
     log.info(f"Inference: {INPUT_SIZE}px @ {1/INFERENCE_INTERVAL:.0f} Hz, conf={CONFIDENCE}")
     log.info(f"Recordings: {RECORDING_PATH}")

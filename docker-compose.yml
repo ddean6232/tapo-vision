@@ -12,14 +12,27 @@ services:
     environment:
       - YOLO_OFFLINE=1
       - ULTRALYTICS_HUB=false
-    # Memory limit to prevent OOM on X220 (adjust based on your RAM)
-    # 4GB X220: use 2g  |  8GB X220: use 4g  |  16GB X220: use 6g
+    # Memory limit to prevent OOM on CHEETAH (adjust based on your RAM)
     deploy:
       resources:
         limits:
-          memory: 3g
+          memory: 4g
     logging:
       driver: json-file
       options:
         max-size: "10m"                  # Cap Docker log files
         max-file: "3"                    # Keep 3 rotated logs
+
+  tapo-dashboard:
+    build: .
+    container_name: tapo-dashboard
+    restart: always
+    network_mode: host                   # Exposes port 38180 on CHEETAH directly
+    volumes:
+      - ./recordings:/app/recordings:ro  # Read-only access to play the videos
+    command: ["python", "dashboard.py"]
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "1"
