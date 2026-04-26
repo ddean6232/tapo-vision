@@ -4,9 +4,7 @@ Tapo Offline AI Analyzer
 Usage:
     python offline_analyzer.py                             # Default: ./recordings/
     python offline_analyzer.py --recordings /path/to/recs # Custom recordings path
-    python offline_analyzer.py --model llava:13b          # Different Ollama vision model
-    python offline_analyzer.py --ollama-url http://192.168.1.10:11434  # Remote Ollama server
-    python offline_analyzer.py --log-level DEBUG          # Verbose logging
+    python offline_analyzer.py --model llama3.2-vision    # Different Ollama vision model
 """
 import os
 import sys
@@ -18,9 +16,10 @@ import base64
 import requests
 import cv2
 from typing import Optional, List
+from dotenv import load_dotenv
 
-# ── Graceful shutdown ───────────────────────────────────────────────────────────
-# Handles Ctrl-C as well as kill/SIGTERM from launchd, Activity Monitor, etc.
+load_dotenv()
+
 _shutdown_requested = False
 
 def _handle_signal(signum, frame):
@@ -31,76 +30,61 @@ def _handle_signal(signum, frame):
 signal.signal(signal.SIGINT, _handle_signal)
 signal.signal(signal.SIGTERM, _handle_signal)
 
-# ── CLI Arguments ───────────────────────────────────────────────────────────────
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Tapo Offline AI Analyzer — locally analyzes security camera recordings using Ollama vision models."
-    )
-    parser.add_argument(
-        "--recordings",
-        default="./recordings/",
-        help="Path to the recordings folder containing video files and unified_events_log.json. "
-             "Default: ./recordings/"
-    )
-    parser.add_argument(
-        "--model",
-        default="llama3.2-vision",
-        help="Ollama vision model to use for analysis. Default: llama3.2-vision"
-    )
-    parser.add_argument(
-        "--ollama-url",
-        default="http://localhost:11434",
-        help="Base URL of the Ollama API server. Default: http://localhost:11434"
-    )
-    parser.add_argument(
-        "--log-level",
-        default="INFO",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
-        help="Logging verbosity level. Default: INFO"
-    )
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--recordings", default=os.getenv("RECORDING_PATH", "./recordings/"))
+    parser.add_argument("--model", default=os.getenv("OLLAMA_MODEL", "llama3.2-vision"))
+    parser.add_argument("--ollama-url", default=os.getenv("OLLAMA_URL", "http://localhost:11434"))
+    parser.add_argument("--log-level", default=os.getenv("LOG_LEVEL", "INFO"), choices=["DEBUG", "INFO", "WARNING", "ERROR"])
     return parser.parse_args()
 
-# ── Frame extraction ────────────────────────────────────────────────────────────
-def get_key_frames(video_path: str, recordings_path: str) -> List[str]:
-    """Extracts 5 strategically spaced frames from the middle (30% to 70%) for maximum object visibility."""
+def get_key_frames(video_path: str, recordings_path: str) -> str:
+    """Extracts 5 frames from the middle and merges them into a single 'filmstrip' image."""
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
-        return []
+        return None
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     if total_frames < 5:
         cap.release()
-        return []
+        return None
 
-    # Focus on the middle of the event where the object is likely most visible
     sample_points = [int(total_frames * pct) for pct in (0.30, 0.40, 0.50, 0.60, 0.70)]
-    saved_paths = []
+    frames = []
 
-    for i, frame_idx in enumerate(sample_points):
+    for frame_idx in sample_points:
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
         ret, frame = cap.read()
         if ret:
-            path = os.path.join(recordings_path, f"temp_ai_frame_{i}.jpg")
-            cv2.imwrite(path, frame)
-            saved_paths.append(path)
+            # Resize down to save LLM context window/VRAM
+            h, w = frame.shape[:2]
+            new_w = 480
+            new_h = int(new_w * h / w)
+            resized = cv2.resize(frame, (new_w, new_h))
+            frames.append(resized)
 
     cap.release()
-    return saved_paths
+    
+    if not frames:
+        return None
+        
+    # Stitch horizontally into one wide image
+    collage = cv2.hconcat(frames)
+    collage_path = os.path.join(recordings_path, f"temp_ai_collage.jpg")
+    cv2.imwrite(collage_path, collage)
+    return collage_path
 
-# ── Vision analysis ─────────────────────────────────────────────────────────────
-def analyze_sequence(image_paths: List[str], ollama_url: str, model: str) -> dict:
-    """Sends all 5 frames to Ollama at once for superior contextual analysis."""
-    logging.info(f"🧠 Asking {model} to analyze {len(image_paths)} sequential frames...")
+def analyze_sequence(image_path: str, ollama_url: str, model: str) -> dict:
+    """Sends the filmstrip to Ollama for superior contextual analysis."""
+    logging.info(f"🧠 Asking {model} to analyze the 5-frame filmstrip...")
     try:
-        base64_images = []
-        for path in image_paths:
-            with open(path, "rb") as f:
-                base64_images.append(base64.b64encode(f.read()).decode("utf-8"))
+        with open(image_path, "rb") as f:
+            base64_image = base64.b64encode(f.read()).decode("utf-8")
 
         prompt = (
-            "You are an expert security surveillance AI. Look at these 5 sequential frames taken from the middle of a security video. "
-            "By looking at the sequence, you can better identify moving objects. "
-            "NOTE: This may be from an Infrared Night-Vision camera (black and white). "
+            "You are an expert security surveillance AI. Look at this single image carefully. "
+            "It is a 'filmstrip' containing 5 sequential frames taken from a security video, reading left-to-right. "
+            "By looking at how objects change across the 5 frames, you can perfectly identify moving vehicles or people. "
             "1. Identify the specific make and model of any vehicles. "
             "2. Identify the color of the vehicles (if night vision, use 'dark' or 'light'). "
             "3. Identify the clothing type and color of any people present. "
@@ -116,12 +100,12 @@ def analyze_sequence(image_paths: List[str], ollama_url: str, model: str) -> dic
             json={
                 "model": model,
                 "prompt": prompt,
-                "images": base64_images,
+                "images": [base64_image],
                 "format": "json",
                 "stream": False,
                 "options": {"temperature": 0.1}
             },
-            timeout=180  # Longer timeout since it's processing 5 images at once
+            timeout=180
         )
         response.raise_for_status()
         data = response.json()
@@ -147,7 +131,6 @@ def analyze_sequence(image_paths: List[str], ollama_url: str, model: str) -> dic
         logging.error(f"Ollama Error: {e}")
         return {"error": str(e)}
 
-# ── Main pipeline ───────────────────────────────────────────────────────────────
 def run_analyzer(recordings_path: str, model: str, ollama_url: str):
     recordings_path = os.path.abspath(recordings_path)
 
@@ -173,9 +156,12 @@ def run_analyzer(recordings_path: str, model: str, ollama_url: str):
         except Exception as e:
             logging.error(f"Failed to read {jf}: {e}")
             continue
+            
+        # Ignore legacy files like unified_events_log.json which are lists, not dicts
+        if not isinstance(event, dict):
+            continue
 
         if "ai_analysis" not in event:
-            # Derive video filename
             base_name = os.path.basename(jf).replace(".json", "")
             video_path = os.path.join(recordings_path, f"{base_name}.mp4")
 
@@ -186,20 +172,17 @@ def run_analyzer(recordings_path: str, model: str, ollama_url: str):
                     json.dump(event, f, indent=4)
                 continue
 
-            logging.info(f"🎬 Processing: {base_name}.mp4 (5-frame middle distribution)")
-            img_paths = get_key_frames(video_path, recordings_path)
+            logging.info(f"🎬 Processing: {base_name}.mp4 (5-frame filmstrip)")
+            img_path = get_key_frames(video_path, recordings_path)
 
-            if img_paths:
-                aggregated = analyze_sequence(img_paths, ollama_url, model)
-                for img_path in img_paths:
-                    try:
-                        os.remove(img_path)
-                    except OSError:
-                        pass
+            if img_path:
+                aggregated = analyze_sequence(img_path, ollama_url, model)
+                try:
+                    os.remove(img_path)
+                except OSError:
+                    pass
 
                 logging.info(f"✅ AI Result: {aggregated}")
-                
-                # Save the new analysis back to the individual JSON file
                 event["ai_analysis"] = aggregated
                 with open(jf, "w") as f:
                     json.dump(event, f, indent=4)
@@ -208,25 +191,17 @@ def run_analyzer(recordings_path: str, model: str, ollama_url: str):
 
     logging.info(f"🏁 Analysis complete. Analyzed {processed_count} new videos.")
 
-# ── Entry point ─────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     args = parse_args()
+    os.makedirs(args.recordings, exist_ok=True)
 
-    recordings_path = args.recordings
-    os.makedirs(recordings_path, exist_ok=True)
-
-    # Logging goes to both the recordings folder and stdout
     logging.basicConfig(
         level=getattr(logging, args.log_level),
         format="%(asctime)s [%(levelname)s] %(message)s",
         handlers=[
-            logging.FileHandler(os.path.join(recordings_path, "offline_analyzer.log")),
+            logging.FileHandler(os.path.join(args.recordings, "offline_analyzer.log")),
             logging.StreamHandler(sys.stdout),
         ],
     )
 
-    run_analyzer(
-        recordings_path=recordings_path,
-        model=args.model,
-        ollama_url=args.ollama_url,
-    )
+    run_analyzer(args.recordings, args.model, args.ollama_url)
