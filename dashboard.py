@@ -169,8 +169,16 @@ HTML_TEMPLATE = """
 
 def get_events_list():
     json_files = glob.glob(os.path.join(RECORDINGS_DIR, "*.json"))
-    # Sort files by modification time, newest first
-    json_files.sort(key=os.path.getmtime, reverse=True)
+    
+    # Extract the MMDD-HHMMSS timestamp from the filename (e.g. LPatio_0426-192200.json)
+    def extract_time_str(filepath):
+        try:
+            return os.path.basename(filepath).replace(".json", "").split("_")[-1]
+        except:
+            return ""
+
+    # Sort files perfectly by the timestamp in the filename, newest first
+    json_files.sort(key=extract_time_str, reverse=True)
     
     events = []
     for jf in json_files:
@@ -180,9 +188,15 @@ def get_events_list():
             
             base_name = os.path.basename(jf).replace(".json", "")
             video_file = f"{base_name}.mp4"
+            time_str = extract_time_str(jf)
             
-            mtime = os.path.getmtime(jf)
-            dt_str = datetime.fromtimestamp(mtime).strftime("%b %d, %H:%M:%S")
+            # Format the time beautifully from the filename, not the file modification time
+            try:
+                dt_obj = datetime.strptime(time_str, "%m%d-%H%M%S")
+                dt_obj = dt_obj.replace(year=datetime.now().year)
+                dt_str = dt_obj.strftime("%b %d, %I:%M:%S %p")
+            except Exception:
+                dt_str = "Unknown Time"
             
             # Format AI Description if it exists
             ai_desc = ""
