@@ -217,6 +217,8 @@ def get_events_list():
                 
                 if parts:
                     ai_desc = " • ".join(parts)
+                else:
+                    ai_desc = "No details identified"
             
             if os.path.exists(os.path.join(RECORDINGS_DIR, video_file)):
                 events.append({
