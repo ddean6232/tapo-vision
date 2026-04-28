@@ -21,6 +21,8 @@ cat << EOF > "$PLIST_PATH"
     <string>com.darrendean.tapovision</string>
     <key>ProgramArguments</key>
     <array>
+        <string>/usr/bin/caffeinate</string>
+        <string>-is</string>
         <string>$UV_PATH</string>
         <string>run</string>
         <string>$TARGET_DIR/tapo_vision.py</string>
