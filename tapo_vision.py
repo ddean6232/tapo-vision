@@ -189,7 +189,8 @@ class SmartTracker:
                             json.dump(meta, f)
                     log.info(f"[{self.name}] Recording saved: {current_file}")
             except Exception as e:
-                log.error(f"[{self.name}] Writer error: {e}")
+                import traceback
+                log.error(f"[{self.name}] Writer error: {traceback.format_exc()}")
 
         # Cleanup on shutdown
         if writer is not None:
@@ -320,12 +321,14 @@ if __name__ == "__main__":
     # ──────────────────────────────────────────────
     try:
         import dashboard
+        import waitress
+        # Use Waitress (production WSGI server) instead of Flask dev server to prevent "Too many open files" leaks
         threading.Thread(
-            target=lambda: dashboard.app.run(host="0.0.0.0", port=38180, use_reloader=False, debug=False),
+            target=lambda: waitress.serve(dashboard.app, host="0.0.0.0", port=38180, clear_untrusted_proxy_headers=True),
             name="Dashboard",
             daemon=True
         ).start()
-        log.info("Dashboard web server started on port 38180")
+        log.info("Dashboard web server started on port 38180 (Waitress)")
     except Exception as e:
         log.error(f"Failed to start dashboard: {e}")
 

@@ -47,6 +47,18 @@ cat << EOF > "$PLIST_PATH"
         <key>PATH</key>
         <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin:$HOME/.cargo/bin</string>
     </dict>
+
+    <!-- Increase open file limits to prevent OSError: [Errno 24] crashes -->
+    <key>SoftResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>10240</integer>
+    </dict>
+    <key>HardResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>10240</integer>
+    </dict>
 </dict>
 </plist>
 EOF
