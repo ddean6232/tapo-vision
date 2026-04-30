@@ -62,7 +62,7 @@ FPS               = int(os.getenv("CAMERA_FPS", "20")) # Match your camera's act
 INFERENCE_INTERVAL = float(os.getenv("INFERENCE_INTERVAL", "0.5"))
 INPUT_SIZE         = 416        # Smaller input = faster inference (was 640)
 CONFIDENCE         = 0.60       # Slightly lower to compensate for smaller input
-MAX_WRITE_QUEUE    = 500        # Cap to prevent OOM (~500 frames ≈ 300 MB)
+MAX_WRITE_QUEUE    = 2000       # Cap to prevent OOM (~2000 frames ≈ 1.2 GB, safe for M4)
 
 # ──────────────────────────────────────────────
 # Graceful shutdown
