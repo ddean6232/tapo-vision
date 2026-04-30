@@ -316,36 +316,6 @@ if __name__ == "__main__":
     for t in trackers:
         t.start()
 
-    # ──────────────────────────────────────────────
-    # Launch Dashboard seamlessly in the background
-    # ──────────────────────────────────────────────
-    try:
-        import dashboard
-        import waitress
-        # Use Waitress (production WSGI server) instead of Flask dev server to prevent "Too many open files" leaks
-        threading.Thread(
-            target=lambda: waitress.serve(dashboard.app, host="0.0.0.0", port=38180, clear_untrusted_proxy_headers=True),
-            name="Dashboard",
-            daemon=True
-        ).start()
-        log.info("Dashboard web server started on port 38180 (Waitress)")
-    except Exception as e:
-        log.error(f"Failed to start dashboard: {e}")
-
-    # ──────────────────────────────────────────────
-    # Launch Offline Analyzer in the background
-    # ──────────────────────────────────────────────
-    try:
-        import offline_analyzer
-        threading.Thread(
-            target=offline_analyzer.start_analyzer_loop,
-            name="AnalyzerLoop",
-            daemon=True
-        ).start()
-        log.info("Offline Analyzer scheduled (running every 5 minutes in the background)")
-    except Exception as e:
-        log.error(f"Failed to start offline analyzer: {e}")
-
     log.info("All cameras running. Press Ctrl+C to stop.")
 
     # Keep main thread alive, log heartbeat every 60s
